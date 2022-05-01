@@ -1,10 +1,7 @@
 {
-    "cSpell.words": [
-        "resave"
-    ],
+    "cSpell.words": ["findorcreate", "resave"],
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "[javascript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     }
 }
-

@@ -2,6 +2,7 @@
 # Private
 ignore_GIT
 secrets.js
+client_secret_google.json
 
 
 # Logs
@@ -127,6 +128,7 @@ dist
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
+.vscode/
 
 # yarn v2
 .yarn/cache
