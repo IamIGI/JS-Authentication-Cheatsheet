@@ -1,4 +1,4 @@
-//USE
+//USE Google Strategy findOrCreate passportLocalMongoose passport session
 //OAuth 2.0 and Sign in with Google
 
 //------------------IMPORT--------------
@@ -31,7 +31,7 @@ app.use(
         //Use the session package, init config
         secret: process.env.SECRET_EXPRESS_SESSION,
         resave: false,
-        saveUninitialized: false,
+        saveUninitialized: true,
     })
 );
 
@@ -55,6 +55,7 @@ const userSchema = new mongoose.Schema({
     email: String,
     password: String,
     googleId: String,
+    secret: Array,
 });
 
 //-------plugins------
@@ -132,11 +133,18 @@ app.get('/register', function (req, res) {
 
 app.get('/secrets', function (req, res) {
     console.log('Connect to website: ' + 'Secret');
-    if (req.isAuthenticated()) {
-        res.render('secrets');
-    } else {
-        res.redirect('/login');
-    }
+    User.find({ secret: { $ne: null } }, function (err, foundUsers) {
+        if (err) {
+            console.log(err);
+        } else {
+            foundUsers.forEach(function (user) {
+                console.log(user.secret);
+            });
+            if (foundUsers) {
+                res.render('secrets', { userWithSecrets: foundUsers });
+            }
+        }
+    });
 });
 
 app.get('/logout', function (req, res) {
@@ -146,23 +154,43 @@ app.get('/logout', function (req, res) {
     res.redirect('/');
 });
 
+app.get('/submit', function (req, res) {
+    console.log('Connect to website: ' + 'Submit');
+    if (req.isAuthenticated()) {
+        res.render('submit');
+    } else {
+        res.redirect('/login');
+    }
+});
+
 //----------POST---------
+app.post('/submit', function (req, res) {
+    console.log('Adding secret');
+
+    if (req.isAuthenticated()) {
+        User.findById(req.user._id.toString(), function (err, user) {
+            user.secret.push(req.body.secret);
+            user.save(function () {
+                res.redirect('/secrets');
+            });
+        });
+    } else {
+        res.redirect('/login');
+    }
+});
+
 app.post('/register', function (req, res) {
     //method from passport-local-mongoose package
-    User.register(
-        { username: req.body.username },
-        req.body.password,
-        function (err, user) {
-            if (err) {
-                console.log(err);
-                res.redirect('/register');
-            } else {
-                passport.authenticate('local')(req, res, function () {
-                    res.redirect('/secrets');
-                });
-            }
+    User.register({ username: req.body.username }, req.body.password, function (err, user) {
+        if (err) {
+            console.log(err);
+            res.redirect('/register');
+        } else {
+            passport.authenticate('local')(req, res, function () {
+                res.redirect('/secrets');
+            });
         }
-    );
+    });
 });
 
 app.post('/login', function (req, res) {
